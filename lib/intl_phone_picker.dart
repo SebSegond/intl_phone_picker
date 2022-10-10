@@ -294,6 +294,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
   late String number;
 
   String? validatorMessage;
+  var _isPhoneNumberValid = false;
 
   @override
   void initState() {
@@ -308,19 +309,25 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
     if (widget.initialCountryCode == null && number.startsWith('+')) {
       number = number.substring(1);
       // parse initial value
-      _selectedCountry = countries.firstWhere((country) => number.startsWith(country.fullCountryCode), orElse: () => _countryList.first);
+      _selectedCountry = countries.firstWhere(
+          (country) => number.startsWith(country.fullCountryCode),
+          orElse: () => _countryList.first);
 
       // remove country code from the initial number value
-      number = number.replaceFirst(RegExp("^${_selectedCountry.fullCountryCode}"), "");
+      number = number.replaceFirst(
+          RegExp("^${_selectedCountry.fullCountryCode}"), "");
     } else {
-      _selectedCountry =
-          _countryList.firstWhere((item) => item.code == (widget.initialCountryCode ?? 'US'), orElse: () => _countryList.first);
+      _selectedCountry = _countryList.firstWhere(
+          (item) => item.code == (widget.initialCountryCode ?? 'US'),
+          orElse: () => _countryList.first);
 
       // remove country code from the initial number value
-      if(number.startsWith('+')){
-        number = number.replaceFirst(RegExp("^\\+${_selectedCountry.fullCountryCode}"), "");
-      }else{
-        number = number.replaceFirst(RegExp("^${_selectedCountry.fullCountryCode}"), "");
+      if (number.startsWith('+')) {
+        number = number.replaceFirst(
+            RegExp("^\\+${_selectedCountry.fullCountryCode}"), "");
+      } else {
+        number = number.replaceFirst(
+            RegExp("^${_selectedCountry.fullCountryCode}"), "");
       }
     }
 
@@ -392,7 +399,8 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         widget.onSaved?.call(
           PhoneNumber(
             countryISOCode: _selectedCountry.code,
-            countryCode: '+${_selectedCountry.dialCode}${_selectedCountry.regionCode}',
+            countryCode:
+                '+${_selectedCountry.dialCode}${_selectedCountry.regionCode}',
             number: value!,
           ),
         );
@@ -407,15 +415,12 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         if (widget.autovalidateMode != AutovalidateMode.disabled) {
           validatorMessage = await widget.validator?.call(phoneNumber);
         }
-
+        _isPhoneNumberValid = await phoneNumber.isValidNumber();
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
         if (!widget.disableLengthCheck && value != null) {
-          return value.length >= _selectedCountry.minLength &&
-                  value.length <= _selectedCountry.maxLength
-              ? null
-              : widget.invalidNumberMessage;
+          return _isPhoneNumberValid ? null : widget.invalidNumberMessage;
         }
 
         return validatorMessage;
