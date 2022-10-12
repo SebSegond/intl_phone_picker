@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl_phone_picker/country_picker_dialog.dart';
+import 'package:libphonenumber/libphonenumber.dart';
 
 import './countries.dart';
 import './phone_number.dart';
@@ -49,11 +50,6 @@ class IntlPhonePicker extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.keyboardType}
   final TextInputType keyboardType;
-
-  /// Controls the text being edited.
-  ///
-  /// If null, this widget will create its own [TextEditingController].
-  final TextEditingController? controller;
 
   /// Defines the keyboard focus for this widget.
   ///
@@ -247,7 +243,6 @@ class IntlPhonePicker extends StatefulWidget {
     this.readOnly = false,
     this.initialValue,
     this.keyboardType = TextInputType.phone,
-    this.controller,
     this.focusNode,
     this.decoration = const InputDecoration(),
     this.style,
@@ -292,6 +287,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
   late Country _selectedCountry;
   late List<Country> filteredCountries;
   late String number;
+  final TextEditingController _controller = TextEditingController();
 
   String? validatorMessage;
   var _isPhoneNumberValid = false;
@@ -348,6 +344,17 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         });
       }
     }
+    _initDefaultValue();
+  }
+
+  Future<void> _initDefaultValue() async {
+    final phoneNumber = PhoneNumber(
+      countryISOCode: _selectedCountry.code,
+      countryCode: '+${_selectedCountry.fullCountryCode}',
+      number: number.replaceAll(" ", ""),
+    );
+    _isPhoneNumberValid = await phoneNumber.isValidNumber();
+    await formatAndSetPhoneNumber(phoneNumber);
   }
 
   Future<void> _changeCountry() async {
@@ -376,14 +383,13 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: (widget.controller == null) ? number : null,
       readOnly: widget.readOnly,
       obscureText: widget.obscureText,
       textAlign: widget.textAlign,
       textAlignVertical: widget.textAlignVertical,
       cursorColor: widget.cursorColor,
       onTap: widget.onTap,
-      controller: widget.controller,
+      controller: _controller,
       focusNode: widget.focusNode,
       cursorHeight: widget.cursorHeight,
       cursorRadius: widget.cursorRadius,
@@ -409,13 +415,16 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         final phoneNumber = PhoneNumber(
           countryISOCode: _selectedCountry.code,
           countryCode: '+${_selectedCountry.fullCountryCode}',
-          number: value,
+          number: value.replaceAll(" ", ""),
         );
 
         if (widget.autovalidateMode != AutovalidateMode.disabled) {
           validatorMessage = await widget.validator?.call(phoneNumber);
         }
         _isPhoneNumberValid = await phoneNumber.isValidNumber();
+        if (_isPhoneNumberValid) {
+          await formatAndSetPhoneNumber(phoneNumber);
+        }
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
@@ -425,7 +434,6 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
 
         return validatorMessage;
       },
-      maxLength: widget.disableLengthCheck ? null : _selectedCountry.maxLength,
       keyboardType: widget.keyboardType,
       inputFormatters: widget.inputFormatters,
       enabled: widget.enabled,
@@ -434,6 +442,17 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
       textInputAction: widget.textInputAction,
       autovalidateMode: widget.autovalidateMode,
     );
+  }
+
+  Future<void> formatAndSetPhoneNumber(PhoneNumber phoneNumber) async {
+    var formatted = await PhoneNumberUtil.formatAsYouType(
+        phoneNumber: phoneNumber.completeNumber,
+        isoCode: phoneNumber.countryISOCode);
+    if (formatted != null) {
+      var formattedWithoutCountryCode = formatted.replaceFirst(phoneNumber.countryCode, "");
+      _controller.text = formattedWithoutCountryCode;
+      _controller.selection = TextSelection.fromPosition(TextPosition(offset: _controller.text.length));
+    }
   }
 
   Container _buildFlagsButton() {
