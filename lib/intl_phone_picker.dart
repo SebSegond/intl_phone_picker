@@ -344,7 +344,10 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         });
       }
     }
-    _initDefaultValue();
+
+    if(widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+      _initDefaultValue();
+    }
   }
 
   Future<void> _initDefaultValue() async {
@@ -428,7 +431,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         widget.onChanged?.call(phoneNumber);
       },
       validator: (value) {
-        if (!widget.disableLengthCheck && value != null) {
+        if (!widget.disableLengthCheck && value != null && value.isNotEmpty) {
           return _isPhoneNumberValid ? null : widget.invalidNumberMessage;
         }
 
