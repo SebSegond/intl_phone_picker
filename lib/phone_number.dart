@@ -48,6 +48,7 @@ class PhoneNumber {
   Future<bool> isValidNumber() async {
     var isValid = await PhoneNumberUtil.isValidPhoneNumber(
         phoneNumber: number, isoCode: countryISOCode);
+    print("isValidNumber : " + (isValid ?? false).toString() + " for number: "+ number + " for country code : " + countryISOCode);
 
     return isValid ?? false;
   }
