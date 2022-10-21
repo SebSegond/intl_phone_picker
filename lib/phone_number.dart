@@ -62,12 +62,6 @@ class PhoneNumber {
       throw NumberTooShortException();
     }
 
-    final _validPhoneNumber = RegExp(r'^[+0-9]*[0-9]*$');
-
-    if (!_validPhoneNumber.hasMatch(phoneNumber)) {
-      throw InvalidCharactersException();
-    }
-
     if (phoneNumber.startsWith('+')) {
       return countries.firstWhere((country) => phoneNumber
           .substring(1)
