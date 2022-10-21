@@ -354,7 +354,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
     final phoneNumber = PhoneNumber(
       countryISOCode: _selectedCountry.code,
       countryCode: '+${_selectedCountry.fullCountryCode}',
-      number: number.replaceAll(" ", ""),
+      number: number.replaceAll(" ", "").replaceAll("-", ""),
     );
     _isPhoneNumberValid = await phoneNumber.isValidNumber();
     await formatAndSetPhoneNumber(phoneNumber);
@@ -418,7 +418,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         final phoneNumber = PhoneNumber(
           countryISOCode: _selectedCountry.code,
           countryCode: '+${_selectedCountry.fullCountryCode}',
-          number: value.replaceAll(" ", ""),
+          number: value.replaceAll(" ", "").replaceAll("-", ""),
         );
 
         if (widget.autovalidateMode != AutovalidateMode.disabled) {
