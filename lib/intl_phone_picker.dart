@@ -424,6 +424,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         if (widget.autovalidateMode != AutovalidateMode.disabled) {
           validatorMessage = await widget.validator?.call(phoneNumber);
         }
+        print("checking phone number");
         _isPhoneNumberValid = await phoneNumber.isValidNumber();
         if (_isPhoneNumberValid) {
           await formatAndSetPhoneNumber(phoneNumber);
