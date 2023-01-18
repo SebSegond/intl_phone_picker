@@ -295,18 +295,22 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
   @override
   void initState() {
     super.initState();
+    _initPhoneNumber();
+  }
+
+  void _initPhoneNumber() {
     _countryList = widget.countries == null
         ? countries
         : countries
-            .where((country) => widget.countries!.contains(country.code))
-            .toList();
+        .where((country) => widget.countries!.contains(country.code))
+        .toList();
     filteredCountries = _countryList;
     number = widget.initialValue ?? '';
     if (widget.initialCountryCode == null && number.startsWith('+')) {
       number = number.substring(1);
       // parse initial value
       _selectedCountry = countries.firstWhere(
-          (country) => number.startsWith(country.fullCountryCode),
+              (country) => number.startsWith(country.fullCountryCode),
           orElse: () => _countryList.first);
 
       // remove country code from the initial number value
@@ -314,7 +318,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
           RegExp("^${_selectedCountry.fullCountryCode}"), "");
     } else {
       _selectedCountry = _countryList.firstWhere(
-          (item) => item.code == (widget.initialCountryCode ?? 'US'),
+              (item) => item.code == (widget.initialCountryCode ?? 'US'),
           orElse: () => _countryList.first);
 
       // remove country code from the initial number value
@@ -345,8 +349,15 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
       }
     }
 
-    if(widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+    if(widget.initialValue != null) {
       _initDefaultValue();
+    }
+  }
+
+  @override void didUpdateWidget(covariant IntlPhonePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != null && widget.initialValue != null && oldWidget.initialValue != widget.initialValue) {
+      _initPhoneNumber();
     }
   }
 
@@ -424,7 +435,6 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
         if (widget.autovalidateMode != AutovalidateMode.disabled) {
           validatorMessage = await widget.validator?.call(phoneNumber);
         }
-        print("checking phone number");
         _isPhoneNumberValid = await phoneNumber.isValidNumber();
         if (_isPhoneNumberValid) {
           await formatAndSetPhoneNumber(phoneNumber);
