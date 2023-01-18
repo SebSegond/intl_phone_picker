@@ -472,6 +472,7 @@ class _IntlPhonePickerState extends State<IntlPhonePicker> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                const SizedBox(width: 12),
                 if (widget.enabled &&
                     widget.showDropdownIcon &&
                     widget.dropdownIconPosition == IconPosition.leading) ...[
